@@ -4,7 +4,7 @@ newDiv.className = "mainItem";
 
 const image = document.createElement("img");
 // image.src = "https://via.placeholder.com/100";
-image.src = chrome.runtime.getURL("assets/example.png"); // Use the image from the extension's assets
+// image.src = chrome.runtime.getURL("assets/example.png"); // Use the image from the extension's assets
 image.style.width = "100%";
 image.style.height = "100%";
 image.draggable = false;
@@ -30,6 +30,24 @@ newDiv.appendChild(resizerSE);
 
 // Append the new div to the body of the webpage
 document.body.appendChild(newDiv);
+
+// Retrieve uploaded image from storage and set it as the source
+chrome.storage.local.get("uploadedImage", function (result) {
+  if (result.uploadedImage) {
+    image.src = result.uploadedImage;
+  }
+});
+
+// Listen for messages from the popup to update the image
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.action === "updateImage") {
+    chrome.storage.local.get("uploadedImage", function (result) {
+      if (result.uploadedImage) {
+        image.src = result.uploadedImage;
+      }
+    });
+  }
+});
 
 // Inject CSS to style the div
 const style = document.createElement("style");
@@ -74,7 +92,6 @@ style.textContent = `
       }
   `;
 document.head.appendChild(style);
-
 
 const el = document.querySelector(".mainItem");
 
