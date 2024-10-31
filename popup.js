@@ -14,3 +14,31 @@ document.getElementById('imageInput').addEventListener('change', function(event)
         reader.readAsDataURL(file);
     }
 });
+
+// CAMERA ACCESS
+document.addEventListener('DOMContentLoaded', function() {
+    const button = document.getElementById('myButton');
+    const savedImage = document.getElementById('savedImage');
+
+    // Load saved image from chrome.storage.local
+    chrome.storage.local.get(['capturedImage'], function(result) {
+        if (result.capturedImage) {
+            savedImage.src = result.capturedImage;
+        }
+    });
+
+    // Listen for changes in chrome.storage.local
+    chrome.storage.onChanged.addListener(function(changes, namespace) {
+        console.log("Outter")
+        if (changes.capturedImage && namespace === 'local') {
+        console.log("Inner")
+
+            savedImage.src = changes.capturedImage.newValue;
+        }
+    });
+
+    button.addEventListener('click', function() {
+        // Open a new tab to access the camera
+        chrome.tabs.create({ url: chrome.runtime.getURL('camera.html') });
+    });
+});
