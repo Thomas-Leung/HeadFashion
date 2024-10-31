@@ -18,27 +18,35 @@ document.getElementById('imageInput').addEventListener('change', function(event)
 // CAMERA ACCESS
 document.addEventListener('DOMContentLoaded', function() {
     const button = document.getElementById('myButton');
-    const savedImage = document.getElementById('savedImage');
+    const savedImagesContainer = document.getElementById('savedImages');
 
-    // Load saved image from chrome.storage.local
-    chrome.storage.local.get(['capturedImage'], function(result) {
-        if (result.capturedImage) {
-            savedImage.src = result.capturedImage;
-        }
-    });
-
-    // Listen for changes in chrome.storage.local
-    chrome.storage.onChanged.addListener(function(changes, namespace) {
-        console.log("Outter")
-        if (changes.capturedImage && namespace === 'local') {
-        console.log("Inner")
-
-            savedImage.src = changes.capturedImage.newValue;
-        }
-    });
+    if (savedImagesContainer) {
+        // Load saved images from chrome.storage.local
+        chrome.storage.local.get(['capturedImages'], function(result) {
+            if (result.capturedImages) {
+                result.capturedImages.forEach(imageData => {
+                    const img = document.createElement('img');
+                    img.src = imageData;
+                    savedImagesContainer.appendChild(img);
+                });
+            }
+        });
+    }
 
     button.addEventListener('click', function() {
         // Open a new tab to access the camera
         chrome.tabs.create({ url: chrome.runtime.getURL('camera.html') });
+    });
+
+    // Listen for changes in chrome.storage.local
+    chrome.storage.onChanged.addListener(function(changes, namespace) {
+        if (changes.capturedImages && namespace === 'local') {
+            savedImagesContainer.innerHTML = '';
+            changes.capturedImages.newValue.forEach(imageData => {
+                const img = document.createElement('img');
+                img.src = imageData;
+                savedImagesContainer.appendChild(img);
+            });
+        }
     });
 });
